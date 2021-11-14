@@ -2,36 +2,49 @@ export default class Slide {
   constructor(SLide, Container) {
     this.Slide = document.querySelector(SLide);
     this.Container = document.querySelector(Container);
-    this.events = ['mousedown', 'mousemove', 'mouseleave'];
-    this.eventsCallBacks = [this.onStart, this.handleMousemove, this.HandleRemoveEvents];
+    this.dist = {
+      finalposition: 0, startX: 0, movement: 0, lastPosition: 0,
+    };
+  }
+
+  updatePosition(clientX) {
+    this.dist.movement = (this.dist.startX - clientX) * 2;
+    return this.dist.movement + this.dist.finalposition;
+  }
+
+  moveSlide(distX) {
+    if (distX > 0) {
+      this.dist.lastPosition = distX;
+      this.Slide.style.transform = `translate3d(-${distX}px, 0, 0)`;
+    }
   }
 
   EventsBinder() {
     this.onStart = this.onStart.bind(this);
-    this.HandleRemoveEvents = this.HandleRemoveEvents.bind(this);
+    this.handleRemoveEvents = this.handleRemoveEvents.bind(this);
     this.handleMousemove = this.handleMousemove.bind(this);
     this.addEvents = this.addEvents.bind(this);
   }
 
   handleRemoveEvents() {
-    console.log(this);
-    this.events.forEach((evento, i) => {
-      this.Container.removeEventListener(evento, this.eventsCallBacks[i]);
-    });
+    this.Container.removeEventListener('mousemove', this.handleMousemove);
+    this.dist.finalposition = this.dist.lastPosition;
   }
 
-  handleMousemove() {
-    console.log('mouse move');
-    this.Container.addEventListener('mouseleave', this.handleRemoveEvents);
+  handleMousemove(event) {
+    const finalPosition = this.updatePosition(event.clientX);
+    this.moveSlide(finalPosition);
   }
 
   onStart(event) {
     event.preventDefault();
+    this.dist.startX = event.clientX;
     this.Container.addEventListener('mousemove', this.handleMousemove);
   }
 
   addEvents() {
     this.Container.addEventListener('mousedown', this.onStart);
+    this.Container.addEventListener('mouseup', this.handleRemoveEvents);
   }
 
   init() {
