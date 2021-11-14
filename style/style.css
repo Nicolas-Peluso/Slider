@@ -20,6 +20,7 @@ img{
 
 .Slide{
     display: flex;
+    transform: translate3d(-80px, 0px, 0px);
 }
 
 .Slide li{
