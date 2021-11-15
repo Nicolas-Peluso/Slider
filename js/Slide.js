@@ -1,127 +1,141 @@
+import debounce from './debounce.js';
+
 export default class Slide {
-  constructor(SLide, Container) {
-    this.Slide = document.querySelector(SLide);
-    this.Container = document.querySelector(Container);
-    this.dist = {
-      finalposition: 0, startX: 0, movement: 0, lastPosition: 0,
-    };
+  constructor(slide, wrapper) {
+    this.slide = document.querySelector(slide);
+    this.wrapper = document.querySelector(wrapper);
+    this.dist = { finalPosition: 0, startX: 0, movement: 0 };
+    this.activeClass = 'ativo';
   }
 
   transition(active) {
-    this.Slide.style.transition = active ? 'transform .3s' : '';
-  }
-
-  updatePosition(clientX) {
-    this.dist.movement = (this.dist.startX - clientX) * 2;
-    return (this.dist.movement + this.dist.finalposition);
+    this.slide.style.transition = active ? 'transform .3s' : '';
   }
 
   moveSlide(distX) {
-    console.log(this.index);
-    if (this.index.prev !== null || this.index.next !== null) {
-      this.dist.lastPosition = distX;
-      this.Slide.style.transform = `translate3d(-${distX}px, 0, 0)`;
-    }
+    this.dist.movePosition = distX;
+    this.slide.style.transform = `translate3d(${distX}px, 0, 0)`;
   }
 
-  EventsBinder() {
-    this.onStart = this.onStart.bind(this);
-    this.handleRemoveEvents = this.handleRemoveEvents.bind(this);
-    this.handleMousemove = this.handleMousemove.bind(this);
-    this.addEvents = this.addEvents.bind(this);
+  updatePosition(clientX) {
+    this.dist.movement = (this.dist.startX - clientX) * 1.6;
+    return this.dist.finalPosition - this.dist.movement;
   }
 
-  // Slides COnfiguracao
-  SlidePosition(elemento) {
-    const Total = (this.Container.offsetWidth - elemento.offsetWidth) / 2;
-    return (elemento.offsetLeft - Total);
-  }
-
-  slideConfig() {
-    this.slidArray = [...this.Slide.children].map((elemento) => {
-      const position = this.SlidePosition(elemento);
-      return {
-        position,
-        elemento,
-      };
-    });
-  }
-
-  ChangeSlide(index) {
-    this.SlideIndexNav(index);
-    this.moveSlide(this.slidArray[index].position);
-    this.dist.finalposition = this.slidArray[index].position;
-  }
-
-  activePrevSlide() {
-    if (this.index.prev) this.ChangeSlide(this.index.prev);
-  }
-
-  activeNextSlide() {
-    if (this.index.next) this.ChangeSlide(this.index.next);
-  }
-
-  SlideIndexNav(index) {
-    this.index = {
-      prev: (index - 1 < 0) ? null : index - 1,
-      active: index,
-      next: (index + 1 > this.slidArray.length - 1) ? null : index + 1,
-    };
-    return this.index;
-  }
-
-  // Slides COnfiguracao Final
-
-  handleRemoveEvents(event) {
-    const moveType = (event.type === 'mouseup') ? 'mousemove' : 'touchmove';
-    this.Container.removeEventListener(moveType, this.handleMousemove);
-    this.dist.finalposition = this.dist.lastPosition;
-    this.changeSlideOnEnd();
-    this.transition(true);
-  }
-
-  changeSlideOnEnd() {
-    if (this.dist.movement > 0 && this.index.next !== null) {
-      this.activeNextSlide();
-    } else if (this.dist.movement < 0 && this.index.prev !== null) {
-      this.activePrevSlide();
+  onStart(event) {
+    let movetype;
+    if (event.type === 'mousedown') {
+      event.preventDefault();
+      this.dist.startX = event.clientX;
+      movetype = 'mousemove';
     } else {
-      this.ChangeSlide(this.index.active);
+      this.dist.startX = event.changedTouches[0].clientX;
+      movetype = 'touchmove';
     }
+    this.wrapper.addEventListener(movetype, this.onMove);
+    this.transition(false);
   }
 
-  handleMousemove(event) {
+  onMove(event) {
     const pointerPosition = (event.type === 'mousemove') ? event.clientX : event.changedTouches[0].clientX;
     const finalPosition = this.updatePosition(pointerPosition);
     this.moveSlide(finalPosition);
   }
 
-  onStart(event) {
-    let moveType;
-    if (event.type === 'mousedown') {
-      event.preventDefault();
-      this.dist.startX = event.clientX;
-      moveType = 'mousemove';
-    } else {
-      this.dist.startX = event.changedTouches[0].clientX;
-      moveType = 'touchmove';
-    }
-    this.Container.addEventListener(moveType, this.handleMousemove);
-    this.transition(false);
+  onEnd(event) {
+    const movetype = (event.type === 'mouseup') ? 'mousemove' : 'touchmove';
+    this.wrapper.removeEventListener(movetype, this.onMove);
+    this.dist.finalPosition = this.dist.movePosition;
+    this.transition(true);
+    this.changeSlideOnEnd();
   }
 
-  addEvents() {
-    this.Container.addEventListener('mousedown', this.onStart);
-    this.Container.addEventListener('touchstart', this.onStart);
-    this.Container.addEventListener('mouseup', this.handleRemoveEvents);
-    this.Container.addEventListener('touchend', this.handleRemoveEvents);
+  changeSlideOnEnd() {
+    if (this.dist.movement > 120 && this.index.next !== undefined) {
+      this.activeNextSlide();
+    } else if (this.dist.movement < -120 && this.index.prev !== undefined) {
+      this.activePrevSlide();
+    } else {
+      this.changeSlide(this.index.active);
+    }
+  }
+
+  addSlideEvents() {
+    this.wrapper.addEventListener('mousedown', this.onStart);
+    this.wrapper.addEventListener('touchstart', this.onStart);
+    this.wrapper.addEventListener('mouseup', this.onEnd);
+    this.wrapper.addEventListener('touchend', this.onEnd);
+  }
+
+  // Slides config
+
+  slidePosition(slide) {
+    const margin = (this.wrapper.offsetWidth - slide.offsetWidth) / 2;
+    return -(slide.offsetLeft - margin);
+  }
+
+  slidesConfig() {
+    this.slideArray = [...this.slide.children].map((element) => {
+      const position = this.slidePosition(element);
+      return { position, element };
+    });
+  }
+
+  slidesIndexNav(index) {
+    const last = this.slideArray.length - 1;
+    this.index = {
+      prev: index ? index - 1 : undefined,
+      active: index,
+      next: index === last ? undefined : index + 1,
+    };
+  }
+
+  changeSlide(index) {
+    const activeSlide = this.slideArray[index];
+    this.moveSlide(activeSlide.position);
+    this.slidesIndexNav(index);
+    this.dist.finalPosition = activeSlide.position;
+    this.changeActiveClass();
+  }
+
+  changeActiveClass() {
+    this.slideArray.forEach((item) => item.element.classList.remove(this.activeClass));
+    this.slideArray[this.index.active].element.classList.add(this.activeClass);
+  }
+
+  activePrevSlide() {
+    if (this.index.prev !== undefined) this.changeSlide(this.index.prev);
+  }
+
+  activeNextSlide() {
+    if (this.index.next !== undefined) this.changeSlide(this.index.next);
+  }
+
+  onResize() {
+    setTimeout(() => {
+      this.slidesConfig();
+      this.changeSlide(this.index.active);
+    }, 1000);
+  }
+
+  addResizeEvent() {
+    window.addEventListener('resize', this.onResize);
+  }
+
+  bindEvents() {
+    this.onStart = this.onStart.bind(this);
+    this.onMove = this.onMove.bind(this);
+    this.onEnd = this.onEnd.bind(this);
+
+    this.onResize = debounce(this.onResize.bind(this), 200);
   }
 
   init() {
-    this.EventsBinder();
+    this.bindEvents();
     this.transition(true);
-    this.addEvents();
-    this.slideConfig();
+    this.addSlideEvents();
+    this.slidesConfig();
+    this.addResizeEvent();
     return this;
   }
 }
