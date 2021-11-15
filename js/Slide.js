@@ -128,6 +128,9 @@ export default class Slide {
     this.onEnd = this.onEnd.bind(this);
 
     this.onResize = debounce(this.onResize.bind(this), 200);
+
+    this.activePrevSlide = this.activePrevSlide.bind(this);
+    this.activeNextSlide = this.activeNextSlide.bind(this);
   }
 
   init() {
@@ -136,6 +139,6 @@ export default class Slide {
     this.addSlideEvents();
     this.slidesConfig();
     this.addResizeEvent();
-    return this;
+    this.changeSlide(0);
   }
 }
