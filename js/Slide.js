@@ -9,11 +9,11 @@ export default class Slide {
 
   updatePosition(clientX) {
     this.dist.movement = (this.dist.startX - clientX) * 2;
-    return this.dist.movement + this.dist.finalposition;
+    return (this.dist.movement + this.dist.finalposition);
   }
 
   moveSlide(distX) {
-    if (distX > 0) {
+    if (this.index.prev && this.index.next) {
       this.dist.lastPosition = distX;
       this.Slide.style.transform = `translate3d(-${distX}px, 0, 0)`;
     }
@@ -24,6 +24,38 @@ export default class Slide {
     this.handleRemoveEvents = this.handleRemoveEvents.bind(this);
     this.handleMousemove = this.handleMousemove.bind(this);
     this.addEvents = this.addEvents.bind(this);
+  }
+
+  // Slides COnfiguracao
+  SlidePosition(elemento) {
+    const Total = (this.Container.offsetWidth - elemento.offsetWidth) / 2;
+    return (elemento.offsetLeft - Total);
+  }
+
+  slideConfig() {
+    this.slidArray = [...this.Slide.children].map((elemento) => {
+      const position = this.SlidePosition(elemento);
+      return {
+        position,
+        elemento,
+      };
+    });
+  }
+
+  ChangeSlide(index) {
+    this.SlideIndexNav(index);
+    this.moveSlide(this.slidArray[index].position);
+    this.dist.finalposition = this.slidArray[index].position;
+  }
+
+  SlideIndexNav(index) {
+    this.index = {
+      prev: (index - 1 < 0) ? null : index - 1,
+      active: index,
+      next: (index + 1 > this.slidArray.length - 1) ? null : index + 1,
+    };
+    console.log(this.index);
+    return this.index;
   }
 
   handleRemoveEvents(event) {
@@ -61,6 +93,7 @@ export default class Slide {
   init() {
     this.EventsBinder();
     this.addEvents();
+    this.slideConfig();
     return this;
   }
 }
