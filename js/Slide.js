@@ -7,13 +7,18 @@ export default class Slide {
     };
   }
 
+  transition(active) {
+    this.Slide.style.transition = active ? 'transform .3s' : '';
+  }
+
   updatePosition(clientX) {
     this.dist.movement = (this.dist.startX - clientX) * 2;
     return (this.dist.movement + this.dist.finalposition);
   }
 
   moveSlide(distX) {
-    if (this.index.prev && this.index.next) {
+    console.log(this.index);
+    if (this.index.prev !== null || this.index.next !== null) {
       this.dist.lastPosition = distX;
       this.Slide.style.transform = `translate3d(-${distX}px, 0, 0)`;
     }
@@ -48,20 +53,41 @@ export default class Slide {
     this.dist.finalposition = this.slidArray[index].position;
   }
 
+  activePrevSlide() {
+    if (this.index.prev) this.ChangeSlide(this.index.prev);
+  }
+
+  activeNextSlide() {
+    if (this.index.next) this.ChangeSlide(this.index.next);
+  }
+
   SlideIndexNav(index) {
     this.index = {
       prev: (index - 1 < 0) ? null : index - 1,
       active: index,
       next: (index + 1 > this.slidArray.length - 1) ? null : index + 1,
     };
-    console.log(this.index);
     return this.index;
   }
+
+  // Slides COnfiguracao Final
 
   handleRemoveEvents(event) {
     const moveType = (event.type === 'mouseup') ? 'mousemove' : 'touchmove';
     this.Container.removeEventListener(moveType, this.handleMousemove);
     this.dist.finalposition = this.dist.lastPosition;
+    this.changeSlideOnEnd();
+    this.transition(true);
+  }
+
+  changeSlideOnEnd() {
+    if (this.dist.movement > 0 && this.index.next !== null) {
+      this.activeNextSlide();
+    } else if (this.dist.movement < 0 && this.index.prev !== null) {
+      this.activePrevSlide();
+    } else {
+      this.ChangeSlide(this.index.active);
+    }
   }
 
   handleMousemove(event) {
@@ -81,6 +107,7 @@ export default class Slide {
       moveType = 'touchmove';
     }
     this.Container.addEventListener(moveType, this.handleMousemove);
+    this.transition(false);
   }
 
   addEvents() {
@@ -92,6 +119,7 @@ export default class Slide {
 
   init() {
     this.EventsBinder();
+    this.transition(true);
     this.addEvents();
     this.slideConfig();
     return this;
