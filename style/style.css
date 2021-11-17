@@ -16,6 +16,7 @@ img{
 
 .Slide-Container{
     overflow: hidden;
+    height: 100%;
 }
 
 .Slide{
@@ -42,6 +43,30 @@ img{
     transition: .3s;
 }
 
-.arrow-nav{
+.SlidePaginacao{
     display: flex;
+    padding: 7px;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.SlidePaginacao li a{
+    text-decoration: underline;
+    color: black;
+    height: 50px;
+    width: 50px;
+    background-color: #fb5;
+    border-radius: 50%;
+    overflow: hidden;
+    text-indent: -999px;
+    display: block;
+    margin: 5px;
+}
+
+.SlidePaginacao li a img{
+    background-size: cover;
+}
+
+.SlidePaginacao li.ativo a, .SlidePaginacao li a:hover{
+    background-color: #e54;
 }
