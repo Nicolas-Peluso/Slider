@@ -70,3 +70,49 @@ img{
 .SlidePaginacao li.ativo a, .SlidePaginacao li a:hover{
     background-color: #e54;
 }
+
+.pagination-Container{
+    display: flex;
+    justify-content: center;
+    margin: 70px 0;
+}
+
+.pagination-Container ul{
+    display: flex;
+}
+
+.pagination-Container ul li{
+    margin: 10px;
+}
+
+.pagination-Container ul li img{
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    transform: scale(.9);
+    cursor: pointer;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.pagination-Container ul li.ativo img{
+    transform: scale(1.1);
+}
+
+.arrow-nav{
+    display: flex;
+    justify-content: center;
+}
+.arrow-nav button{
+    margin: 20px;
+    padding: 15px;
+    outline: none;
+    border: 1px solid black;
+    cursor: pointer;
+    border-radius: 4px;
+    background: #fb5;
+}
+
+.arrow-nav button.arrow-prev{
+    transform: rotate(-180deg);
+} 
